@@ -4,21 +4,19 @@
 # --------------------------------------------------------
 
 OPTION=0
-OUTFILE="$PWD/ips.txt"
+IO_FILE="$PWD/ips.txt"
 declare -a pids
-iplist=()
 MAX_PARALLEL=10
 MAX_SLEEP=5.0
 WORDLIST=""
-COUNT=0
 
 check_outfile()
 {
-	if [[ -f $OUTFILE && -s $OUTFILE ]]; then
+	if [[ -f $IO_FILE && -s $IO_FILE ]]; then
 		# clear the file
-		> "${OUTFILE}"
+		> "${IO_FILE}"
 	else
-		touch "${OUTFILE}"
+		touch "${IO_FILE}"
 	fi
 }
 
@@ -96,7 +94,7 @@ ping_sweep()
 	# iterate from 1..255
 	for i in `seq 1 255`; do
 		# ping to see if it is alive, save into temporary file
-		ping -c 1 $1.$i | grep "bytes from" | cut -d " " -f 4 | cut -d ":" -f 1 >> $OUTFILE &
+		ping -c 1 $1.$i | grep "bytes from" | cut -d " " -f 4 | cut -d ":" -f 1 >> $IO_FILE &
 	done
 }
 
@@ -270,6 +268,7 @@ dirb_scan()
 		fi
 	fi
 
+	# HTTP (0) or HTTPS (1)
 	if [ "$3" -eq "0" ]; then
 		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w &
 		pids[$!]=$!
@@ -284,7 +283,7 @@ dirb_scan()
 
 read_file_and_scan()
 {
-	cat $OUTFILE | while read ip; do
+	cat $IO_FILE | while read ip; do
 		scans $ip
 	done
 }
@@ -298,7 +297,7 @@ for (( i=1; i<=$#; i++)); do
 		# file to read IPs from
 		-f|--file)
 			arg=$((i+1))
-			OUTFILE="${!arg}"
+			IO_FILE="${!arg}"
 			OPTION=1
 			shift # past - option
 			;;

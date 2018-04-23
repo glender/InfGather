@@ -3,7 +3,7 @@
 # Author: glender
 # --------------------------------------------------------
 
-OK=0
+OPTION=0
 OUTFILE="$PWD/ips.txt"
 declare -a pids
 iplist=()
@@ -170,21 +170,21 @@ for (( i=1; i<=$#; i++)); do
 		-f|--file)
 			arg=$((i+1))
 			OUTFILE="${!arg}"
-			OK=1
+			OPTION=1
 			shift # past - option
 			;;
 		# IP address to sweep
 		-i|--ip)
 			arg=$((i+1))
 			IP="${!arg}"
-			OK=2
+			OPTION=2
 			shift # past - option
 			;;
 		# single IP address scan
 		-s|--single)
 			arg=$((i+1))
 			IP="${!arg}"
-			OK=3
+			OPTION=3
 			shift # past - option
 			;;
 		# set maximum parallel processes
@@ -206,11 +206,11 @@ for (( i=1; i<=$#; i++)); do
 done
 
 # did the user supply the IP or the file?
-if [ "$OK" -eq "0"  ]; then
+if [ "$OPTION" -eq "0"  ]; then
 	display_usage
 	exit 0
 else
-	case "$OK" in
+	case "$OPTION" in
 		"1")
 			read_file_and_scan
 			wait_for_completion

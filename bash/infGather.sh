@@ -43,6 +43,25 @@ check_installs()
 	fi
 }
 
+display_banner()
+{
+	echo ""
+	echo ""
+ 	echo "###                #####                                    "
+ 	echo " #  #    # ###### #     #   ##   ##### #    # ###### #####  "
+ 	echo " #  ##   # #      #        #  #    #   #    # #      #    # "
+ 	echo " #  # #  # #####  #  #### #    #   #   ###### #####  #    # "
+ 	echo " #  #  # # #      #     # ######   #   #    # #      #####  "
+ 	echo " #  #   ## #      #     # #    #   #   #    # #      #   #  "
+ 	echo "### #    # #       #####  #    #   #   #    # ###### #    # "
+ 	echo ""
+ 	echo ""
+	echo "Author: glender"
+	echo "https://github.com/glender/InfGather"
+	echo ""
+	echo ""
+}
+
 display_usage()
 {
 	echo "Usage: ${0} [options...]"
@@ -112,11 +131,9 @@ check_running()
 				continue
 			else
 				# the PID is no longer running, remove it
-				echo "Removing pid: $PID"
 				delete=( $PID )
     				if [[ ${pids[PID]} = "${delete[0]}" ]]; then
       					unset 'pids[PID]'
-					echo "PID was removed, we can continue now..."
     				fi
 
 			fi
@@ -128,7 +145,7 @@ wait_for_completion()
 {
 	echo "Waiting for completion..."
 
-	totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
+	totalRunning=$(ps -C nmap -C nikto -C dirb -C enum4linux --no-headers | wc -l)
 
 	sp="/-\|"
 	i=1
@@ -151,6 +168,11 @@ scans()
 	nmap -n -sn -T4 $1 -o "$location/$1.$today.nmapHostDiscovery" > /dev/null &
 	pids[$!]=$!
 	check_running 
+
+	nmap -Pn -p- -A $1 -r -n --open -o "$location/$1.$today.nmapAllOpenPorts" > /dev/null &
+	pids[$!]=$!
+	check_running 
+
 	nmap -n -sL $1 -o "$location/$1.$today.nmapListScan" > /dev/null &
 	pids[$!]=$!
 	check_running
@@ -158,6 +180,7 @@ scans()
 	nmap -Pn -sV -T4 $1 -o "$location/$1.$today.nmapServiceDiscovery" > /dev/null &
 	pids[$!]=$!
 	check_running
+
 	nikto_scan $! $location $1 &
 	pids[$!]=$!
 	check_running
@@ -181,6 +204,13 @@ scans()
 	dirb_scan $1 443 "1" &
 	pids[$!]=$!
 	check_running
+
+	enumlocation="/$USER/Gather/enum4linux/$1"
+	mkdir -p $enumlocation
+	enum4linux -U -o $1 > $enumlocation/$1.enum4linux 2>&1 &
+	pids[$!]=$!
+	check_running
+
 }
 
 nikto_scan()
@@ -243,7 +273,6 @@ nikto_scan()
 		check_running
 	done
 
-	wait_for_completion
 }
 
 dirb_scan()
@@ -270,11 +299,11 @@ dirb_scan()
 
 	# HTTP (0) or HTTPS (1)
 	if [ "$3" -eq "0" ]; then
-		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > /dev/null &
+		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2.txt &
 		pids[$!]=$!
 		check_running
 	else
-		dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > /dev/null &
+		dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2.txt &
 		pids[$!]=$!
 		check_running
 	fi
@@ -287,6 +316,9 @@ read_file_and_scan()
 		scans $ip
 	done
 }
+
+# display banner
+display_banner
 
 # check to make sure the user has the proper programs installed 
 check_installs

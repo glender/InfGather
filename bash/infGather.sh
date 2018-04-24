@@ -173,15 +173,19 @@ scans()
 	pids[$!]=$!
 	check_running 
 
-	nmap -n -sL $1 -o "$location/$1.$today.nmapListScan" > /dev/null &
+	nmap -Pn -sL $1 -o "$location/$1.$today.nmapListScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
-	nmap -Pn -sV -T4 $1 -o "$location/$1.$today.nmapServiceDiscovery" > /dev/null &
+	nmap -Pn -sV -T4 -vv $1 -o "$location/$1.$today.nmapServiceDiscovery" > /dev/null &
 	pids[$!]=$!
 	check_running
 
 	nikto_scan $! $location $1 &
+	pids[$!]=$!
+	check_running
+
+	nmap -Pn -T4 -sU -vv -p- $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 

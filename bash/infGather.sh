@@ -169,6 +169,10 @@ scans()
 	pids[$!]=$!
 	check_running 
 
+	nmap -sU -p 53 -sV -P0 --script dns-recursion $1 -o "$location/$1.$today.nmapDNSRecursion" > /dev/null &
+	pids[$!]=$!
+	check_running 
+
 	nmap -Pn -p- -A $1 -r -n --open -o "$location/$1.$today.nmapAllOpenPorts" > /dev/null &
 	pids[$!]=$!
 	check_running 

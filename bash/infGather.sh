@@ -26,6 +26,11 @@ check_installs()
 		echo "Please install nmap before you can proceed."
 		exit 0
 	fi
+
+	if [ ! type enum4linux &> /dev/null ]; then
+		echo "Please install enum4linux before you can proceed."
+		exit 0
+	fi
 	
 	if [ ! type nikto &> /dev/null ]; then
 		echo "Please install nikto before you can proceed."
@@ -100,11 +105,7 @@ ping_sweep()
 
 check_running()
 {
-	sp="/-\|"
-	i=1
-	echo -n ' '
 	while [ ${#pids[@]} -ge $MAX_PARALLEL ]; do
-		printf "\b${sp:i++%${#sp}:1}"
 		for PID in "${pids[@]}"; do
 			if [ -e /proc/${PID} ]; then
 				# PID is still running
@@ -125,33 +126,25 @@ check_running()
 
 wait_for_completion()
 {
-	echo "Waiting for completion. Size is ${#pids[@]}"
+	echo "Waiting for completion..."
+
+	totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
+
 	sp="/-\|"
 	i=1
 	echo -n ' '
-	while [ ${#pids[@]} -gt 0 ]; do
+	until [ $totalRunning -eq 0 ]; do
 		printf "\b${sp:i++%${#sp}:1}"
-		for PID in "${pids[@]}"; do
-			if [ -e /proc/${PID} ]; then
-				# PID is still running
-				continue
-			else
-				# the PID is no longer running, remove it
-				delete=( $PID )
-    				if [[ ${pids[PID]} = "${delete[0]}" ]]; then
-      					unset 'pids[PID]'
-    				fi
-
-			fi
-		done
 		sleep $MAX_SLEEP
+		totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
 	done
+
 	reset
 }
 
 scans()
 {
-	location="/$USER/nmap/$1"
+	location="/$USER/Gather/nmap/$1"
 	mkdir -p $location
 
 	today=`date '+%Y_%m_%d__%H_%M_%S'`
@@ -166,8 +159,6 @@ scans()
 	pids[$!]=$!
 	check_running
 	nikto_scan $! $location $1 &
-	pids[$!]=$!
-	check_running
 	pids[$!]=$!
 	check_running
 
@@ -194,7 +185,7 @@ scans()
 
 nikto_scan()
 {
-	location="/$USER/nikto/$3"
+	location="/$USER/Gather/nikto/$3"
 	mkdir -p $location
 
 	# wait for our main nmap scan to complete, our service detection
@@ -214,10 +205,14 @@ nikto_scan()
 	httpsPorts=($(echo "${httpsPorts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
 	# check the normal HTTPS port for our host
-	nikto -host $3 -port 443 -ssl -output $location/nikto_https_$3.html
+	nmap -p443 $3 -oG - | nikto -h - -output $location/nikto_https_$3.html > /dev/null &
+	pids[$!]=$!
+	check_running
 	
 	# check the normal HTTP port for our host
-	nikto -host $3 -port 80 -output $location/nikto_http_$3.html
+	nmap -p80 $3 -oG - | nikto -h - -output $location/nikto_http_$3.html > /dev/null &
+	pids[$!]=$!
+	check_running
 
 	# remove the https ports from our http ports
 	for target in "${httpsPorts[@]}"; do
@@ -230,7 +225,9 @@ nikto_scan()
 
 	# process the https ports that we have found
 	for port in "${httpsPorts[@]}"; do
-		nikto -host $3 -port $port -ssl -output $location/nikto_https_$3_$port.html
+		nikto -host $3 -port $port -ssl -output $location/nikto_https_$3_$port.html > /dev/null &
+		pids[$!]=$!
+		check_running
 		dirb_scan $3 $port "0" &
 		pids[$!]=$!
 		check_running
@@ -238,17 +235,20 @@ nikto_scan()
 
 	# process the http ports that we have found
 	for port in "${httpPorts[@]}"; do
-		nikto -host $3 -port $port -output $location/nikto_http_$3_$port.html
+		nikto -host $3 -port $port -output $location/nikto_http_$3_$port.html > /dev/null &
+		pids[$!]=$!
+		check_running
 		dirb_scan $3 $port "1" &
 		pids[$!]=$!
 		check_running
 	done
 
+	wait_for_completion
 }
 
 dirb_scan()
 {
-	location="/$USER/dirb/$1"
+	location="/$USER/Gather/dirb/$1"
 	mkdir -p $location
 
 	# did the user supply a wordlist?
@@ -270,11 +270,11 @@ dirb_scan()
 
 	# HTTP (0) or HTTPS (1)
 	if [ "$3" -eq "0" ]; then
-		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w &
+		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > /dev/null &
 		pids[$!]=$!
 		check_running
 	else
-		dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w &
+		dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > /dev/null &
 		pids[$!]=$!
 		check_running
 	fi
@@ -290,6 +290,7 @@ read_file_and_scan()
 
 # check to make sure the user has the proper programs installed 
 check_installs
+START=`date +%s`
 
 # Get the command line options
 for (( i=1; i<=$#; i++)); do

@@ -290,7 +290,6 @@ read_file_and_scan()
 
 # check to make sure the user has the proper programs installed 
 check_installs
-START=`date +%s`
 
 # Get the command line options
 for (( i=1; i<=$#; i++)); do

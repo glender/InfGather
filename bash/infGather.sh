@@ -157,6 +157,15 @@ wait_for_completion()
 	done
 
 	reset
+
+	# notify the user that we have completed 
+	if [ ! type zenity &> /dev/null ]; then
+		if [ type xmessage &> /dev/null ]; then
+			xmessage -center 'message:$0 has completed. Please check your output.' 
+		fi
+	else
+		echo 'message:$0 has completed. Please check your output.' | zenity --notification --listen
+	fi
 }
 
 scans()
@@ -305,15 +314,67 @@ dirb_scan()
 		fi
 	fi
 
-	# HTTP (0) or HTTPS (1)
-	if [ "$3" -eq "0" ]; then
-		dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2.txt &
-		pids[$!]=$!
-		check_running
+	# get the file size so that we can determine if we need to split into more than one file 
+	filesize=$(stat -c%s $WORDLIST)
+	base=$(dirname $WORDLIST) 
+	fname=$(basename $WORDLIST)
+	# half megabyte
+	maxSize=500000 
+	# newly created filename prefix
+	prefix="qwaszx"
+	created=0
+
+	if (( filesize > maxSize )); then
+		# split the file into parts
+		pushd . > /dev/null
+		cd $base
+		split -l 5000 $fname $prefix
+		popd > /dev/null
+	fi
+
+	files=$(shopt -s nullglob dotglob; echo $base/*)
+
+
+	if [[ ${files[@]} =~ $prefix ]]; then
+		files=( "${files[@]/$fname}" )
+		files=( "${files[@]/$base}" )
+		created=1
+	fi
+
+	if [ $created -eq 1 ]; then
+
+		# iterate through our smaller files
+		for f in $files; do
+
+			if [[ $f =~ $prefix ]]; then
+				# HTTP (0) or HTTPS (1)
+				if [ "$3" -eq "0" ]; then
+					dirb http://$1:$2/ $f -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2.txt &
+					pids[$!]=$!
+					check_running
+				else
+					dirb https://$1:$2/ $f -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2.txt &
+					pids[$!]=$!
+					check_running
+				fi
+
+				# clean up our created files
+				rm -f $f
+			fi
+		done
+
 	else
-		dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2.txt &
-		pids[$!]=$!
-		check_running
+
+		# HTTP (0) or HTTPS (1)
+		if [ "$3" -eq "0" ]; then
+			dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2.txt &
+			pids[$!]=$!
+			check_running
+		else
+			dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2.txt &
+			pids[$!]=$!
+			check_running
+		fi
 	fi
 
 }

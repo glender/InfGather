@@ -89,7 +89,7 @@ check_ip()
 		if [[ ${split[0]} -le 255 && ${split[1]} -le 255 && ${split[2]} -le 255 ]]; then
 			echo -e "You provided a correct IP... \nMoving on... \n\n"
 		else 
-			echo -e "Incorrect IP! \n Your IP was out of range! \n\n"
+			echo -e "Incorrect IP! \nYour IP was out of range! \n\n"
 			exit 0
 		fi
 	fi
@@ -105,9 +105,10 @@ check_ip_full()
 		# is each number less than or equal to 255?
 		if [[ ${split[0]} -le 255 && ${split[1]} -le 255 && ${split[2]} -le 255 && ${split[3]} -le 255 ]]; then
 			echo -e "You provided a correct IP... \nMoving on... \n\n"
+			return 0
 		else 
-			echo -e "Incorrect IP! \n Your IP was out of range! \n\n"
-			exit 0
+			echo -e "Incorrect IP! \nYour IP was out of range! \n\n"
+			return 1
 		fi
 	fi
 }
@@ -386,7 +387,11 @@ dirb_scan()
 read_file_and_scan()
 {
 	cat $IO_FILE | while read ip; do
-		scans $ip
+		# is the IP address proper?
+		check_ip_full $IP
+		if [ $? -eq 0 ]; then
+			scans $ip
+		fi
 	done
 }
 
@@ -472,8 +477,12 @@ else
 		"3")
 			# single IP
 			check_ip_full $IP
-			scans $IP
-			wait_for_completion
+			if [ $? -eq 0 ]; then 
+				scans $IP
+				wait_for_completion
+			else
+				exit 0
+			fi
 			;;
 	
 	esac

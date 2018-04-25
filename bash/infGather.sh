@@ -190,6 +190,10 @@ scans()
 	pids[$!]=$!
 	check_running
 
+	nmap -sV -T4 --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
+	pids[$!]=$!
+	check_running
+
 	nmap -Pn -sV -T4 -vv $1 -o "$location/$1.$today.nmapServiceDiscovery" > /dev/null &
 	pids[$!]=$!
 	check_running

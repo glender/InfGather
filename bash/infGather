@@ -191,7 +191,7 @@ wait_for_completion()
 	sp="/-\|"
 	i=1
 	echo -n ' '
-	until [ $totalRunning -eq 0 ] || [ ${#pids[@]} -eq 1 ]; do
+	until [ $totalRunning -eq 1 ] || [ ${#pids[@]} -eq 1 ]; do
 		printf "\b${sp:i++%${#sp}:1}"
 		sleep $MAX_SLEEP
 		totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)

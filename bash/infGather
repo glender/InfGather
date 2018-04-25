@@ -398,11 +398,11 @@ dirb_scan()
 			if [[ $f =~ $prefix ]]; then
 				# HTTP (0) or HTTPS (1)
 				if [ "$3" -eq "0" ]; then
-					dirb -z 250 http://$1:$2/ $f -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2_$bname.txt &
+					dirb http://$1:$2/ $f -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2_$bname.txt &
 					pids[$!]=$!
 					check_running
 				else
-					dirb -z 250 https://$1:$2/ $f -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2_$bname.txt &
+					dirb https://$1:$2/ $f -o $location/dirb_https_$2.txt -w > $location/dirb_https_$1_$2_$bname.txt &
 					pids[$!]=$!
 					check_running
 				fi

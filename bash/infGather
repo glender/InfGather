@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # --------------------------------------------------------
 # Author: glender
 # --------------------------------------------------------
@@ -9,6 +9,43 @@ declare -a pids
 MAX_PARALLEL=12
 MAX_SLEEP=5.0
 WORDLIST=""
+
+install()
+{
+	if [ "$EUID" -ne 0 ]; then
+		echo "NOT installing infGather!"
+		echo "NOT installing infGather bash complete!"
+		echo "NOT installing infGather man page!"
+		return 1
+	fi
+
+	IG="/usr/bin/infGather"
+	BC="/$USER/.bash_completion.d/"
+	MAN="/usr/share/man/man1"
+
+	echo "Installing infGather!"
+	file=$(find /$USER/ -name infGather)
+	cp -f $file $IG > /dev/null 2>&1
+
+	echo "Installing infGather bash complete!"
+	mkdir -p $BC
+	file=$(find /$USER/ -name infGather_bc)
+	base=$(basename $file)
+	cp -f $file $BC > /dev/null 2>&1
+	# append sourcing our bash completion file on shell startup
+	grep -q -F ". '$BC'/infGather_bc" ~/.bashrc || echo ". '$BC'/infGather_bc" >> /$USER/.bashrc
+
+	echo "Installing infGather man page!"
+	mkdir -p $MAN
+	file=$(find /$USER/ -name infGather.1)
+	cp -f $file $MAN/ > /dev/null 2>&1
+	gzip -f $MAN/infGather.1
+	# update man pages
+	mandb > /dev/null 2>&1
+	# make sure that our bash completion takes place
+	exec bash
+	exit 0
+}
 
 check_outfile()
 {
@@ -70,6 +107,7 @@ display_usage()
         echo "		-h, --help		Help information"
 	echo "	[**]	-i, --ip		The IP triple to scan or the full IP to scan (i.e. 10.11.1 OR 10.11.1.1)"
 	echo "		-m, --max		Maximum parallel processes to run (Default is set to $MAX_PARALLEL)"
+	echo "		-p, --perm		Install infGather so that it can be run from anywhere. Install man page and bash completion"
 	echo "		-s, --single		Scan a single IP address"
 	echo "		-w, --wlist		Wordlist to use (Default will be infGatherWordList.txt)"
 	echo "		-z, --ztime		Maximum sleep time between checking if PID completed (Default is set to $MAX_SLEEP s)"
@@ -191,7 +229,7 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	nmap -sV -T4 --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
+	nmap -vv --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
@@ -203,7 +241,7 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	nmap -Pn -T4 -sU -vv $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
+	nmap -Pn -T4 -sU $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
@@ -430,6 +468,11 @@ for (( i=1; i<=$#; i++)); do
 			arg=$((i+1))
 			MAX_PARALLEL="${!arg}"
 			shift # past - option
+			;;
+		# install infGather
+		-p|--perm)
+			install
+			exit 0
 			;;
 		# set the maximum sleep time between checking PID completion
 		-z|--ztime)

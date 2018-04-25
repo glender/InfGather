@@ -1,0 +1,7 @@
+_infGather()
+{
+	local cur=${COMP_WORDS[COMP_CWORD]}
+	opts="-f --file -h --help -i -ip -m --max -p --perm -s --single -w --wlist -z --ztime"
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+}
+complete -F _infGather infGather

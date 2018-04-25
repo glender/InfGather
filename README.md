@@ -1,5 +1,12 @@
 # InfGather
 
+To install:
+
+  * Download repository
+  * cd InfGather/bash
+  * ./infGather -p
+
+
 ### Dependencies
 
   * nmap

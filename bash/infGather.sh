@@ -6,7 +6,7 @@
 OPTION=0
 IO_FILE="$PWD/ips.txt"
 declare -a pids
-MAX_PARALLEL=10
+MAX_PARALLEL=12
 MAX_SLEEP=5.0
 WORDLIST=""
 
@@ -202,7 +202,7 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	nmap -Pn -T4 -sU -vv -p- $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
+	nmap -Pn -T4 -sU -vv $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 

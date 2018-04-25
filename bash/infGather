@@ -4,6 +4,7 @@
 # --------------------------------------------------------
 
 OPTION=0
+QUICK=0
 IO_FILE="$PWD/ips.txt"
 declare -a pids
 MAX_PARALLEL=12
@@ -108,6 +109,7 @@ display_usage()
 	echo "	[**]	-i, --ip		The IP triple to scan or the full IP to scan (i.e. 10.11.1 OR 10.11.1.1)"
 	echo "		-m, --max		Maximum parallel processes to run (Default is set to $MAX_PARALLEL)"
 	echo "		-p, --perm		Install infGather so that it can be run from anywhere. Install man page and bash completion"
+	echo "		-q, --quick		Skip the heavier nmap scans"
 	echo "		-s, --single		Scan a single IP address"
 	echo "		-w, --wlist		Wordlist to use (Default will be infGatherWordList.txt)"
 	echo "		-z, --ztime		Maximum sleep time between checking if PID completed (Default is set to $MAX_SLEEP s)"
@@ -221,15 +223,20 @@ scans()
 	pids[$!]=$!
 	check_running 
 
-	nmap -Pn -p- -A $1 -r -n --open -o "$location/$1.$today.nmapAllOpenPorts" > /dev/null &
-	pids[$!]=$!
-	check_running 
+	if [ $QUICK -eq 0 ]; then
+		nmap -Pn -p- -A $1 -r -n --open -o "$location/$1.$today.nmapAllOpenPorts" > /dev/null &
+		pids[$!]=$!
+		check_running
+		nmap -Pn -T4 -sU $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
+		pids[$!]=$!
+		check_running
+	fi	
 
 	nmap -Pn -sL $1 -o "$location/$1.$today.nmapListScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
-	nmap -vv --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
+	nmap -Pn -vv --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
@@ -238,10 +245,6 @@ scans()
 	check_running
 
 	nikto_scan $! $location $1 &
-	pids[$!]=$!
-	check_running
-
-	nmap -Pn -T4 -sU $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
 	pids[$!]=$!
 	check_running
 
@@ -473,6 +476,11 @@ for (( i=1; i<=$#; i++)); do
 		-p|--perm)
 			install
 			exit 0
+			;;
+		# install infGather
+		-q|--quick)
+			QUICK=1
+			shift # past - option
 			;;
 		# set the maximum sleep time between checking PID completion
 		-z|--ztime)

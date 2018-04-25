@@ -7,7 +7,7 @@ OPTION=0
 QUICK=0
 IO_FILE="$PWD/ips.txt"
 declare -a pids
-MAX_PARALLEL=12
+MAX_PARALLEL=9
 MAX_SLEEP=5.0
 WORDLIST=""
 
@@ -191,7 +191,7 @@ wait_for_completion()
 	sp="/-\|"
 	i=1
 	echo -n ' '
-	until [ $totalRunning -eq 0 ]; do
+	until [ $totalRunning -eq 0 ] || [ ${#pids[@]} -eq 1 ]; do
 		printf "\b${sp:i++%${#sp}:1}"
 		sleep $MAX_SLEEP
 		totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
@@ -205,7 +205,7 @@ wait_for_completion()
 			xmessage -center 'message:$0 has completed. Please check your output.' 
 		fi
 	else
-		echo 'message:$0 has completed. Please check your output.' | zenity --notification --listen
+		echo 'Completed. Please check your output.' | zenity --notification --listen
 	fi
 }
 
@@ -215,32 +215,28 @@ scans()
 	mkdir -p $location
 
 	today=`date '+%Y_%m_%d__%H_%M_%S'`
-	nmap -n -sn -T4 $1 -o "$location/$1.$today.nmapHostDiscovery" > /dev/null &
+	nmap -Pn -sn -T4 -oN "$location/$1.$today.nmapHostDiscovery" $1 > /dev/null &
 	pids[$!]=$!
 	check_running 
 
-	nmap -sU -p 53 -sV -P0 --script dns-recursion $1 -o "$location/$1.$today.nmapDNSRecursion" > /dev/null &
+	nmap -Pn -sU -p 53 -sV -P0 --script dns-recursion -oN "$location/$1.$today.nmapDNSRecursion" $1 > /dev/null &
 	pids[$!]=$!
 	check_running 
 
 	if [ $QUICK -eq 0 ]; then
-		nmap -Pn -p- -A $1 -r -n --open -o "$location/$1.$today.nmapAllOpenPorts" > /dev/null &
+		nmap -Pn -p- -A -oN "$location/$1.$today.nmapAllOpenPorts" $1 -r -n --open > /dev/null &
 		pids[$!]=$!
 		check_running
-		nmap -Pn -T4 -sU $1 -o "$location/$1.$today.nmapUDPScan" > /dev/null &
+		nmap -Pn -T4 -sU -oN "$location/$1.$today.nmapUDPScan" $1 > /dev/null &
 		pids[$!]=$!
 		check_running
 	fi	
 
-	nmap -Pn -sL $1 -o "$location/$1.$today.nmapListScan" > /dev/null &
+	nmap -Pn -vv --script vuln -oN "$location/$1.$today.nmapVulnScan" $1 > /dev/null &
 	pids[$!]=$!
 	check_running
 
-	nmap -Pn -vv --script vuln $1 -o "$location/$1.$today.nmapVulnScan" > /dev/null &
-	pids[$!]=$!
-	check_running
-
-	nmap -Pn -sV -T4 -vv $1 -o "$location/$1.$today.nmapServiceDiscovery" > /dev/null &
+	nmap -Pn -sV -T4 -vv -oN "$location/$1.$today.nmapServiceDiscovery" $1 > /dev/null &
 	pids[$!]=$!
 	check_running
 
@@ -248,15 +244,15 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-users $1 -o "$location/$1.$today.nmapSmbEnumUsers" > /dev/null &
+	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-users -oN "$location/$1.$today.nmapSmbEnumUsers" $1 > /dev/null &
 	pids[$!]=$!
 	check_running
 	
-	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-groups $1 -o "$location/$1.$today.nmapSmbEnumGroups" > /dev/null &
+	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-groups -oN "$location/$1.$today.nmapSmbEnumGroups" $1 > /dev/null &
 	pids[$!]=$!
 	check_running
 	
-	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-shares $1 -o "$location/$1.$today.nmapSmbEnumShares" > /dev/null & 
+	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-shares -oN "$location/$1.$today.nmapSmbEnumShares" $1 > /dev/null & 
 	pids[$!]=$!
 	check_running
 
@@ -370,16 +366,19 @@ dirb_scan()
 	prefix="qwaszx"
 	created=0
 
+	# generate random 32 character alphanumeric string
+	newDir=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
 	if (( filesize > maxSize )); then
 		# split the file into parts
 		pushd . > /dev/null
-		cd $base
-		split -l 5000 $fname $prefix
+		mkdir $base/$newDir
+		cd $base 
+		split -l 5000 $fname $newDir/$prefix
 		popd > /dev/null
 	fi
 
-	files=$(shopt -s nullglob dotglob; echo $base/*)
-
+	files=$(shopt -s nullglob dotglob; echo $base/$newDir/*)
 
 	if [[ ${files[@]} =~ $prefix ]]; then
 		files=( "${files[@]/$fname}" )
@@ -404,10 +403,12 @@ dirb_scan()
 					check_running
 				fi
 
-				# clean up our created files
-				rm -f $f
 			fi
+
 		done
+
+		# cleanup our newly created smaller files
+		rm -rf $base/$newDir
 
 	else
 

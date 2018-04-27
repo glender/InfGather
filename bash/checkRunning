@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# --------------------------------------------------------
+# Author: glender
+# --------------------------------------------------------
+
+nmap=$(ps -C nmap --no-headers | wc -l)
+
+# nmap runs first and kicks off our other programs
+# so we wait until it is not running
+until [ $nmap -eq 0 ]; do
+	sleep 5
+	nmap=$(ps -C nmap --no-headers | wc -l)
+done
+
+echo "NMAP has completed!"
+echo ""
+echo ""
+
+dirb=$(ps -C dirb --no-headers | wc -l)
+nikto=$(ps -C nikto --no-headers | wc -l)
+enum=$(ps -C enum4Linux --no-headers | wc -l)
+total=$dirb+$nikto+$enum
+
+until [ $total -eq 0 ]; do
+	sleep 5
+
+	dirb=$(ps -C dirb --no-headers | wc -l)
+	if [ $dirb -eq 0 ]; then
+		echo "DIRB has completed"
+		echo ""
+		echo ""
+	fi
+
+	nikto=$(ps -C nikto --no-headers | wc -l)
+	if [ $nikto -eq 0 ]; then
+		echo "NIKTO has completed"
+		echo ""
+		echo ""
+	fi
+
+	enum=$(ps -C enum4Linux --no-headers | wc -l)
+	if [ $enum -eq 0 ]; then
+		echo "ENUM4LINUX has completed"
+		echo ""
+		echo ""
+	fi	
+
+	total=$dirb+$nikto+$enum
+done

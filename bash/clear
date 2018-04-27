@@ -1,0 +1,19 @@
+#!/bin/bash
+# --------------------------------------------------------
+# Author: glender
+# --------------------------------------------------------
+
+if [ -n $1 ]; then
+	echo $1
+	location="/$USER/Gather/"
+	declare -a programs=(nmap nikto dirb enum4linux)
+
+	for program in ${programs[@]}; do
+		echo "Clearing $location$program/$1"
+		rm -rf $location$program/$1
+	done
+else
+	echo "Usage: $0 IP"
+	echo "This will clear the information that was gathered for the given IP"
+	echo ""
+fi

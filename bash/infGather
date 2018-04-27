@@ -187,6 +187,10 @@ wait_for_completion()
 	echo "Waiting for completion..."
 
 	totalRunning=$(ps -C nmap -C nikto -C dirb -C enum4linux --no-headers | wc -l)
+	dirb=$(ps -C dirb --no-headers | wc -l)
+	nmap=$(ps -C nmap --no-headers | wc -l)
+	nikto=$(ps -C nikto --no-headers | wc -l)
+	enum=$(ps -C enum4Linux --no-headers | wc -l)
 
 	sp="/-\|"
 	i=1
@@ -195,6 +199,34 @@ wait_for_completion()
 		printf "\b${sp:i++%${#sp}:1}"
 		sleep $MAX_SLEEP
 		totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
+
+		dirb=$(ps -C dirb --no-headers | wc -l)
+		if [ $dirb -eq 0 ]; then
+			echo "" 
+			echo "[!] DIRB has completed!"
+			echo ""
+		fi
+
+		nmap=$(ps -C nmap --no-headers | wc -l)
+		if [ $nmap -eq 0 ]; then
+			echo "" 
+			echo "[!] NMAP has completed!"
+			echo ""
+		fi
+
+		nikto=$(ps -C nikto --no-headers | wc -l)
+		if [ $nikto -eq 0 ]; then
+			echo "" 
+			echo "[!] NIKTO has completed!"
+			echo ""
+		fi
+
+		enum=$(ps -C enum4Linux --no-headers | wc -l)
+		if [ $enum -eq 0 ]; then
+			echo "" 
+			echo "[!] ENUM4LINUX has completed!"
+			echo ""
+		fi
 	done
 
 	reset

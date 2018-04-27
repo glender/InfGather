@@ -499,6 +499,7 @@ for (( i=1; i<=$#; i++)); do
 			MAX_SLEEP="${!arg}"
 			shift # past - option
 			;;
+		# did the user supply a word list? 
 		-w|--wlist)
 			arg=$((i+1))
 			WORDLIST="${!arg}"

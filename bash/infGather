@@ -260,10 +260,6 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	dirb_scan $1 8080 "0" &
-	pids[$!]=$!
-	check_running
-
 	dirb_scan $1 443 "1" &
 	pids[$!]=$!
 	check_running
@@ -287,11 +283,11 @@ nikto_scan()
 	done
 
 	# get ports other than the normal HTTP (80) and HTTPS (443) 
-	httpPorts=$(grep -i http $2/*nmap* | grep open | grep -v "80/" | grep -v "443/" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
+	httpPorts=$(grep -i http $2/*nmap* | grep open | grep -v "80//" | grep -v "443//" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
 	
 	# get the HTTPS ports
-	httpsPorts=$(grep -i http $2/*nmap* | grep open | grep ssl | grep -v "80/" | grep -v "443/" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
-	httpsPorts+=$(grep -i https $2/*nmap* | grep open | grep -v "80/" | grep -v "443/" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
+	httpsPorts=$(grep -i http $2/*nmap* | grep open | grep ssl | grep -v "80//" | grep -v "443//" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
+	httpsPorts+=$(grep -i https $2/*nmap* | grep open | grep -v "80//" | grep -v "443//" | awk -F: '{ print $2 }' | awk -F/ '{ print $1 }')
 
 	# ensure that they are unique entries
 	httpPorts=($(echo "${httpPorts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))

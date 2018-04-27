@@ -260,10 +260,14 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	dirb_scan $1 443 "1" &
+	dirb_scan $1 8080 "0" &
 	pids[$!]=$!
 	check_running
 
+	dirb_scan $1 443 "1" &
+	pids[$!]=$!
+	check_running
+	
 	enumlocation="/$USER/Gather/enum4linux/$1"
 	mkdir -p $enumlocation
 	enum4linux -U -o $1 > $enumlocation/$1.enum4linux 2>&1 &

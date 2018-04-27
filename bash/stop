@@ -7,4 +7,4 @@
 ps -elf | grep dirb | grep -v grep | awk '{ print $4 }' | xargs kill -9 > /dev/null 2>&1 
 ps -elf | grep nmap | grep -v grep | awk '{ print $4 }' | xargs kill -9 > /dev/null 2>&1
 ps -elf | grep nikto | grep -v grep | awk '{ print $4 }' | xargs kill -9 > /dev/null 2>&1
-ps -elf | grep infGather | grep -v grep | awk '{ print $4 }' | xargs kill -9 > /dev/null 2>&1
+ps -elf | grep infGather | grep -v grep | grep -v vim | awk '{ print $4 }' | xargs kill -9 > /dev/null 2>&1

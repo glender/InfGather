@@ -5,6 +5,7 @@
 
 OPTION=0
 QUICK=0
+ONLY=0
 IO_FILE="$PWD/ips.txt"
 declare -a pids
 MAX_PARALLEL=10
@@ -160,6 +161,7 @@ display_usage()
         echo "		-h, --help		Help information"
 	echo "		-i, --ip		The IP triple to scan or the full IP to scan (i.e. 10.11.1 OR 10.11.1.1)"
 	echo "		-m, --max		Maximum parallel processes to run (Default is set to $MAX_PARALLEL)"
+	echo "		-o, --only		Only run nmap, ignore quick option"
 	echo "		-p, --perm		Install infGather so that it can be run from anywhere. Install man page and bash completion"
 	echo "		-q, --quick		Skip the heavier nmap scans"
 	echo "		-s, --single		Scan a single IP address"
@@ -273,7 +275,7 @@ scans()
 	pids[$!]=$!
 	check_running 
 
-	if [ $QUICK -eq 0 ]; then
+	if [ $QUICK -eq 0 ] || [ $ONLY -eq 1 ]; then
 		nmap -Pn -p- -A -oN "$location/$1.$today.nmapAllOpenPorts" $1 -r -n --open > /dev/null &
 		pids[$!]=$!
 		check_running
@@ -290,9 +292,11 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	nikto_scan $! $location $1 &
-	pids[$!]=$!
-	check_running
+	if [ $ONLY -eq 0 ]; then
+		nikto_scan $! $location $1 &
+		pids[$!]=$!
+		check_running
+	fi
 
 	nmap -Pn -T4 -sS -p139,445 --script=smb-enum-users -oN "$location/$1.$today.nmapSmbEnumUsers" $1 > /dev/null &
 	pids[$!]=$!
@@ -306,19 +310,21 @@ scans()
 	pids[$!]=$!
 	check_running
 
-	dirb_scan $1 80 "0" &
-	pids[$!]=$!
-	check_running
+	if [ $ONLY -eq 0 ]; then
+		dirb_scan $1 80 "0" &
+		pids[$!]=$!
+		check_running
 
-	dirb_scan $1 443 "1" &
-	pids[$!]=$!
-	check_running
+		dirb_scan $1 443 "1" &
+		pids[$!]=$!
+		check_running
 	
-	enumlocation="/$USER/Gather/enum4linux/$1"
-	mkdir -p $enumlocation
-	enum4linux -U -o $1 > $enumlocation/$1.enum4linux 2>&1 &
-	pids[$!]=$!
-	check_running
+		enumlocation="/$USER/Gather/enum4linux/$1"
+		mkdir -p $enumlocation
+		enum4linux -U -o $1 > $enumlocation/$1.enum4linux 2>&1 &
+		pids[$!]=$!
+		check_running
+	fi
 
 }
 
@@ -448,12 +454,14 @@ dirb_scan()
 			if [[ $f =~ $prefix ]]; then
 				# HTTP (0) or HTTPS (1)
 				if [ "$3" -eq "0" ]; then
+					# does the URL respond?
 					if curl --output /dev/null --silent --head --fail http://$1:$2/; then
 						dirb http://$1:$2/ $f -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2_$bname.txt &
 						pids[$!]=$!
 						check_running
 					fi
 				else
+					# does the URL respond?
 					if curl --output /dev/null --silent --head --fail https://$1:$2/; then
 						dirb https://$1:$2/ $f -o $location/dirb_https_$2.txt -w > $location/dirb_https_$1_$2_$bname.txt &
 						pids[$!]=$!
@@ -471,14 +479,16 @@ dirb_scan()
 
 		# HTTP (0) or HTTPS (1)
 		if [ "$3" -eq "0" ]; then
+			# does the URL respond?
 			if curl --output /dev/null --silent --head --fail http://$1:$2/; then
 				dirb http://$1:$2/ $WORDLIST -o $location/dirb_http_$2.txt -w > $location/dirb_http_$1_$2.txt &
 				pids[$!]=$!
 				check_running
 			fi
 		else
+			# does the URL respond?
 			if curl --output /dev/null --silent --head --fail https://$1:$2/; then
-				dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > $location/dirb_httpd_$1_$2.txt &
+				dirb https://$1:$2/ $WORDLIST -o $location/dirb_https_$2.txt -w > $location/dirb_https_$1_$2.txt &
 				pids[$!]=$!
 				check_running
 			fi
@@ -539,9 +549,14 @@ for (( i=1; i<=$#; i++)); do
 			install
 			exit 0
 			;;
-		# install infGather
+		# skip the longer nmap scans
 		-q|--quick)
 			QUICK=1
+			;;
+		# only nmap
+		-o|--only)
+			QUICK=0
+			ONLY=1
 			;;
 		# set the maximum sleep time between checking PID completion
 		-z|--ztime)

@@ -11,6 +11,58 @@ MAX_PARALLEL=10
 MAX_SLEEP=5.0
 WORDLIST=""
 
+user_pick_ip()
+{
+	# get available IPs
+	ips=$(ifconfig | awk '/inet /{print $2}' | grep -v "127.0.0.1")
+
+	declare -a options=("Help")
+
+	# add our IP(s) to the array of options
+	for ip in ${ips[@]}; do
+		options+=($ip)
+	done
+
+	# display to user, ask for option, or help
+	echo "Please select one of the following:"
+	echo ""
+
+	select o in "${options[@]}"; do
+		case $o in
+			# help
+			"${options[0]}")
+				display_usage	
+				exit 0
+				;;
+			# IP(s) or invalid
+			*)
+				# is it an IP?
+				if [[ $o =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+					for i in ${ips[@]}; do
+						if [ $i = $o ]; then
+							# grab the first three octects
+							ip=$(echo $i | grep -Eo '([0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3}))')
+							echo $ip
+							# is the IP address proper?
+							check_ip $ip
+							# sweep the IP address given
+							ping_sweep $ip
+							# wait for all of the spawned processes to finish
+							wait
+							read_file_and_scan
+							wait_for_completion
+							exit 0
+						fi
+					done
+				else
+					display_usage
+					exit 0
+				fi
+				;;
+		esac
+	done
+}
+
 install()
 {
 	if [ "$EUID" -ne 0 ]; then
@@ -106,15 +158,13 @@ display_usage()
 	echo ""
         echo "		-f, --file		Read a file of IPs instead of scanning for alive boxes"
         echo "		-h, --help		Help information"
-	echo "	[**]	-i, --ip		The IP triple to scan or the full IP to scan (i.e. 10.11.1 OR 10.11.1.1)"
+	echo "		-i, --ip		The IP triple to scan or the full IP to scan (i.e. 10.11.1 OR 10.11.1.1)"
 	echo "		-m, --max		Maximum parallel processes to run (Default is set to $MAX_PARALLEL)"
 	echo "		-p, --perm		Install infGather so that it can be run from anywhere. Install man page and bash completion"
 	echo "		-q, --quick		Skip the heavier nmap scans"
 	echo "		-s, --single		Scan a single IP address"
 	echo "		-w, --wlist		Wordlist to use (Default will be infGatherWordList.txt)"
 	echo "		-z, --ztime		Maximum sleep time between checking if PID completed (Default is set to $MAX_SLEEP s)"
-	echo ""
-	echo "	[**] is required to run the script"
 	echo ""
 }
 
@@ -191,7 +241,7 @@ wait_for_completion()
 	sp="/-\|"
 	i=1
 	echo -n ' '
-	until [ $totalRunning -eq 1 ] || [ ${#pids[@]} -eq 1 ]; do
+	until [ $totalRunning -le 1 ] || [ ${#pids[@]} -le 1 ]; do
 		printf "\b${sp:i++%${#sp}:1}"
 		sleep $MAX_SLEEP
 		totalRunning=$(ps -C nmap -C nikto -C dirb --no-headers | wc -l)
@@ -519,6 +569,7 @@ done
 
 # did the user supply the IP or the file?
 if [ "$OPTION" -eq "0"  ]; then
+	user_pick_ip
 	display_usage
 	exit 0
 else

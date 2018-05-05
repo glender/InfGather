@@ -551,11 +551,12 @@ for (( i=1; i<=$#; i++)); do
 			;;
 		# skip the longer nmap scans
 		-q|--quick)
+			echo "Skipping longer nmap scans."
 			QUICK=1
 			;;
 		# only nmap
 		-o|--only)
-			QUICK=0
+			echo "Only running nmap scans."
 			ONLY=1
 			;;
 		# set the maximum sleep time between checking PID completion

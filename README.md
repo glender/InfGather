@@ -29,4 +29,4 @@ Man Page Example:
 
 # Exploits
 
-Exploits will be published later. As of now, they cannot be published. 
+Exploit poc.py is OSCP, OVRFLW cmd.

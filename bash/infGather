@@ -586,7 +586,6 @@ done
 # did the user supply the IP or the file?
 if [ "$OPTION" -eq "0"  ]; then
 	user_pick_ip
-	display_usage
 	exit 0
 else
 	case "$OPTION" in

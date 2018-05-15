@@ -24,9 +24,11 @@ Man Page Example:
   * dirb
   * nikto
   * zentiy || xmessage
-  
-  Open to suggestions, let me know if there is anything else that should be added/modified!
+
 
 # Exploits
 
 Exploit poc.py is OSCP, OVRFLW cmd.
+
+
+Open to suggestions, let me know if there is anything else that should be added/modified!

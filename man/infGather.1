@@ -11,13 +11,13 @@ SYNOPSIS
 
 DESCRIPTION
      infGather gathers information about the given IP or octect
-     triple. It uses nmap, dirb, nikto, enum4linux, etc. to coll-
-     ect and capture useful information. The information is stor-
-     ed in the /$USER/Gather/program/IP/ directory, where the pr-
-     ogram could be nmap/dirb/etc. By default, there are configu-
-     ration options that are set. Configuration options like, the
-     word list to use, max time to sleep, etc. To display more 
-     details use -h or --help. 
+     triple. It uses nmap, dirb, nikto, enum4linux, etc. to 
+     collect and capture useful information. The information is
+     stored in the /$USER/Gather/program/IP/ directory, where 
+     the program could be nmap/dirb/etc. By default, there are 
+     configuration options that are set. Configuration options 
+     like the word list to use, max time to sleep, etc. To 
+     display more details use -h or --help. 
 
 OPTIONS
 
@@ -61,9 +61,9 @@ OPTIONS
 FILES
      /$USER/Gather/program/IP/
           The location of the collection of output from the given
-          program. The program could be nmap, nikto, etc. For ex-
-          ample, if it was nmap the direction location would be 
-          /$USER/Gather/nmap/IP/. 
+          program. The program could be nmap, nikto, etc. For 
+	  example, if it was nmap the direction location would 
+          be /$USER/Gather/nmap/IP/. 
 
 EXAMPLES 
 
@@ -73,13 +73,13 @@ EXAMPLES
 
      infGather -i 10.11.1 -w /usr/share/wordlists/dirb/common.txt
           Ping sweep to determine what IPs are "alive", scan the 
-          "alive" IPs, using the word list /usr/share/wordlists/-
+          "alive" IPs, using the word list /usr/share/wordlists/
           dirb/common.txt
 
      infGather -f ips.txt -m 20 -z 3
-          Scan the IPs within the ips.txt file, setting max paral-
-          lel processes to 20, sleep time to 3s, using the default
-          word list.
+          Scan the IPs within the ips.txt file, setting max 
+          parallel processes to 20, sleep time to 3s, using 
+          the default word list.
 
 REPORTING BUGS
      https://github.com/glender/InfGather/bugs
@@ -87,4 +87,4 @@ REPORTING BUGS
 AUTHOR
      glender
 
-Linux                Last change: APRIL 2018                    1
+Linux                Last change: MAY 2018                      1

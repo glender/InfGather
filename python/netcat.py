@@ -20,7 +20,6 @@ port               = 0
 
 # this runs a command and returns the output
 def run_command(command):
-        
         # trim the newline
         command = command.rstrip()
         

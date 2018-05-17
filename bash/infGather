@@ -43,7 +43,6 @@ user_pick_ip()
 						if [ $i = $o ]; then
 							# grab the first three octects
 							ip=$(echo $i | grep -Eo '([0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3}))')
-							echo $ip
 							# is the IP address proper?
 							check_ip $ip
 							# sweep the IP address given

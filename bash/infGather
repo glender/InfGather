@@ -147,6 +147,7 @@ display_banner()
  	echo ""
  	echo ""
 	echo "Author: glender"
+	echo "Email: inf.infGather@gmail.com"
 	echo "https://github.com/glender/InfGather"
 	echo ""
 	echo ""

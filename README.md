@@ -31,7 +31,3 @@ Man Page Example:
 Exploit poc.py is OSCP, OVRFLW cmd.
 
 Open to suggestions, let me know if there is anything else that should be added/modified!
-
-# Twitter 
-
-@InfGather 

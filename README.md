@@ -28,10 +28,11 @@ Man Page Example:
 
 # Exploits
 
-Exploit poc.py is OSCP, OVRFLW cmd.
+Exploits ovrflw1.py/ovrflw2.py are OSCP, OVRFLW cmd.
 
-Open to suggestions, let me know if there is anything else that should be added/modified!
 
 # Email
 
 Please send questions/comments/bugs to inf.infGather@gmail.com
+
+Open to suggestions, let me know if there is anything else that should be added/modified!

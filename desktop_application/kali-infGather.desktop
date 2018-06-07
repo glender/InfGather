@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=infGather
+Encoding=UTF-8
+Exec=sh -c "infGather;${SHELL:-bash}"
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=01-info-gathering;01-04-network-scanners;02-vulnerability-analysis;

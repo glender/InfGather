@@ -66,10 +66,21 @@ user_pick_ip()
 install()
 {
 	if [ "$EUID" -ne 0 ]; then
+		echo "You are not running as root!"
 		echo "NOT installing infGather!"
 		echo "NOT installing infGather bash complete!"
 		echo "NOT installing infGather man page!"
 		return 1
+	fi
+
+	# is the user using Kali? 
+	OS=$(uname -a)
+	if [[ "$OS" = *"$kali"* ]]; then
+		# setup the desktop application
+		APP="/usr/share/applications/"
+		desktop=$(find /$USER/ -name kali-infGather.desktop)
+		cp -f $desktop $APP > /dev/null 2>&1
+		echo "Installing infGather desktop application!"
 	fi
 
 	IG="/usr/bin/infGather"

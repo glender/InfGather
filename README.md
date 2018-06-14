@@ -30,6 +30,9 @@ Man Page Example:
 
 Exploits ovrflw1.py/ovrflw2.py are OSCP, OVRFLW cmd.
 
+# Windows Backdoor/ASLR
+
+In the windowsASLR/windowsBackdoor folders there are PDF files that contain POCs for bypassing ASLR on Windows Vista and for backdooring exisiting Windows PEs.
 
 # Email
 

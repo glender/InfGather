@@ -93,4 +93,4 @@ if valid_ip(sys.argv[1]):
 else:
 
     print "Usage: " + sys.argv[0] + " IP"
-    print "Example: " + sys.argv[0] + " 10.11.1"
+    print "Example: " + sys.argv[0] + " 10.11.1.1"

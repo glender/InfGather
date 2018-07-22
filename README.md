@@ -29,6 +29,7 @@ Man Page Example:
 # Exploits
 
 Exploits ovrflw1.py/ovrflw2.py are OSCP, OVRFLW cmd.
+Exploit in the OSCE directory is for TFTP. It is a zero day contained within the OSCE course through Offensive Security. 
 
 # Windows Backdoor/ASLR
 

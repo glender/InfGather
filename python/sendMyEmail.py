@@ -1,10 +1,10 @@
 #! /bin/python
-__author__ = "glender"
-__copyright__ = "Copyright (c) 2018 glender"
-__credits__ = [ "glender" ]
+__author__ = "donutsThatsHowWeGetAnts"
+__copyright__ = "Copyright (c) 2018 donutsThatsHowWeGetAnts"
+__credits__ = [ "donutsThatsHowWeGetAnts" ]
 __license__ = "MIT"
 __version__ = "0.1"
-__maintainer__ = "glender"
+__maintainer__ = "donutsThatsHowWeGetAnts"
 __email__ = "None"
 __status__ = "Production"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # --------------------------------------------------------
-# Author: glender
+# Author: donutsThatsHowWeGetAnts
 # --------------------------------------------------------
 
 nmap=$(ps -C nmap --no-headers | wc -l)

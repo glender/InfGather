@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # --------------------------------------------------------
-# Author: glender
+# Author: donutsThatsHowWeGetAnts
 # --------------------------------------------------------
 
 OPTION=0
@@ -157,9 +157,9 @@ display_banner()
  	echo "### #    # #       #####  #    #   #   #    # ###### #    # "
  	echo ""
  	echo ""
-	echo "Author: glender"
+	echo "Author: donutsThatsHowWeGetAnts"
 	echo "Email: inf.infGather@gmail.com"
-	echo "https://github.com/glender/InfGather"
+	echo "https://github.com/donutsThatsHowWeGetAnts/InfGather"
 	echo ""
 	echo ""
 }

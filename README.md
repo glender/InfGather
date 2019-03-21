@@ -32,10 +32,6 @@ Exploits ovrflw1.py/ovrflw2.py are OSCP, OVRFLW cmd.
 
 Exploit in the OSCE directory is for TFTP. It is a zero day contained within the OSCE course through Offensive Security. 
 
-# Windows Backdoor/ASLR
-
-In the windowsASLR/windowsBackdoor folders there are PDF files that contain POCs for bypassing ASLR on Windows Vista and for backdooring exisiting Windows PEs.
-
 # Email
 
 Please send questions/comments/bugs to inf.infGather@gmail.com

@@ -1,0 +1,7 @@
+# determine how long a process has been running by name
+function __runtime {
+  pid=$(ps -aux | grep -i $1 | grep -v "grep" | awk '{print $2}')
+  ps -o etime= -p $pid  
+}
+
+alias runtime='__runtime'

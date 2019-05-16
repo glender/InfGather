@@ -1,0 +1,6 @@
+# find the owner of a process by name 
+function __owner {
+  ps -aux | grep -i $1 | grep -v "grep" | awk '{print "USER/OWNER:",$1,"PID:",$2,"COMMAND:",$11}'
+}
+
+alias owner='__owner'

@@ -1,0 +1,7 @@
+# go back multiple directories 
+function __back {
+  for i in `seq 1 $1`; do cd ..; done
+}
+
+alias back='__back'
+alias b='__back'

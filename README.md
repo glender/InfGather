@@ -24,7 +24,3 @@ Man Page Example:
   * dirb
   * nikto
   * zentiy || xmessage
-
-# Email
-
-Open to suggestions, let me know if there is anything else that should be added/modified!

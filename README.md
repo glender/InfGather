@@ -27,6 +27,4 @@ Man Page Example:
 
 # Email
 
-Please send questions/comments/bugs to inf.infGather@gmail.com
-
 Open to suggestions, let me know if there is anything else that should be added/modified!
